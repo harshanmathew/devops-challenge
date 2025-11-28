@@ -1,37 +1,50 @@
 name: CI Pipeline
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # -----------------------
+      # Checkout Source Code
+      # -----------------------
+      - name: Checkout Code
         uses: actions/checkout@v3
 
+      # -----------------------
+      # Python Setup + Linting
+      # -----------------------
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - name: Install Python deps
+      - name: Install Python Dependencies
         run: pip install flake8
 
-      - name: Lint Python
+      - name: Lint Python Files
         run: flake8 app/*.py
 
+      # -----------------------
+      # Helm Installation + Lint
+      # -----------------------
       - name: Install Helm
         uses: azure/setup-helm@v3
         with:
-         version: v3.14.0
-        env:
-         GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          version: v3.14.0
 
       - name: Helm Lint
         run: helm lint helm/devops-api
 
-      - name: Install Terraform
+      # -----------------------
+      # Terraform Init + Validate
+      # -----------------------
+      - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.7
@@ -41,5 +54,16 @@ jobs:
 
       - name: Terraform Validate
         run: terraform -chdir=terraform validate
+
+      # -----------------------
+      # Docker Build (with output)
+      # -----------------------
       - name: Build Docker Image
-        run: docker build -t devops-api .
+        id: docker_build
+        run: |
+          IMAGE_ID=$(docker build -t devops-api . --quiet)
+          echo "Built image ID: $IMAGE_ID"
+          echo "image_id=$IMAGE_ID" >> $GITHUB_OUTPUT
+
+      - name: Print Docker Image ID
+        run: echo "Docker Image built:${{ steps.docker_build.outputs.image_id }}"
