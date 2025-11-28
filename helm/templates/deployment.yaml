@@ -1,29 +1,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: devops-api
+  name: {{ .Chart.Name }}
+  namespace: devops-challenge
+  labels:
+    app: {{ .Chart.Name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: devops-api
+      app: {{ .Chart.Name }}
   template:
     metadata:
       labels:
-        app: devops-api
+        app: {{ .Chart.Name }}
     spec:
+      # Pod Security Context
+      securityContext:
+        runAsUser: 1000  # appuser UID
+        runAsGroup: 1000 # appuser GID
+        fsGroup: 1000
       containers:
-      - name: devops-api
-        image: devops-api
-        ports:
-        - containerPort: 80
-        securityContext:
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 80
+          # Container Security Context
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              # Although we setcap in Dockerfile, K8s may need explicit add depending on runtime/policy
+              add:
+                - NET_BIND_SERVICE 
+          volumeMounts:
+            # Mount /tmp because filesystem is ReadOnly, and Python/Frameworks often need a temp write space
+            - name: tmp-volume
+              mountPath: /tmp
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       volumes:
-      - name: tmp
-        emptyDir: {}
+        - name: tmp-volume
+          emptyDir: {}
