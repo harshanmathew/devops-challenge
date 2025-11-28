@@ -1,3 +1,14 @@
 image:
   repository: secure-boot-app
   tag: latest
+  pullPolicy: IfNotPresent # Important for local development
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  limits:
+    memory: 128Mi
+  requests:
+    memory: 64Mi
