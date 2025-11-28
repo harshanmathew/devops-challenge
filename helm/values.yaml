@@ -1,7 +1,3 @@
-replicaCount: 1
 image:
-  repository: devops-api
+  repository: secure-boot-app
   tag: latest
-service:
-  type: ClusterIP
-  port: 80
