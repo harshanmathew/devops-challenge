@@ -32,8 +32,10 @@ jobs:
         with:
           terraform_version: 1.5.7
 
+      - name: Terraform Init
+        run: terraform -chdir=terraform init -input=false
+
       - name: Terraform Validate
         run: terraform -chdir=terraform validate
-
       - name: Build Docker Image
         run: docker build -t devops-api .
