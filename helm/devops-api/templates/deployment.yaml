@@ -21,6 +21,11 @@ spec:
           readOnlyRootFilesystem: true
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+        resources:
+          limits:
+            memory: "128Mi"
+          requests:
+            memory: "64Mi"
         volumeMounts:
         - name: tmp
           mountPath: /tmp
