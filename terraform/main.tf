@@ -1,30 +1,19 @@
-terraform {
-  required_providers {
-    kubernetes = {
-      source = "hashicorp/kubernetes"
-      version = "~> 2.0"
-    }
-  }
-}
-
-provider "kubernetes" {
-  config_path = "~/.kube/config"
-}
-
-resource "kubernetes_namespace" "ns" {
+resource "kubernetes_namespace" "devops_challenge" {
   metadata {
     name = "devops-challenge"
   }
 }
 
-resource "kubernetes_resource_quota" "rq" {
+resource "kubernetes_resource_quota" "mem_limit" {
   metadata {
-    name      = "memory-limit"
-    namespace = kubernetes_namespace.ns.metadata[0].name
+    name      = "mem-limit"
+    namespace = kubernetes_namespace.devops_challenge.metadata[0].name
   }
+
   spec {
     hard = {
-      "limits.memory" = "512Mi"
+      "requests.memory" = "512Mi"
+      "limits.memory"   = "512Mi"
     }
   }
 }
