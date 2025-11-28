@@ -25,7 +25,7 @@ jobs:
         uses: azure/setup-helm@v3
 
       - name: Helm Lint
-        run: helm lint helm/
+        run: helm lint helm/devops-api
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
